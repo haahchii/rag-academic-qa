@@ -162,8 +162,8 @@ if uploaded_file is not None:
 
             return response.text
 
-        except Exception:
-            return "Sorry, I could not generate an answer right now. Please try again."
+        except Exception as e:
+            return f"Gemini error: {e}"
 
     if question.strip():
         scores, indices = retrieve_with_sbert(
