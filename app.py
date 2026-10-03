@@ -160,58 +160,20 @@ if uploaded_file is not None:
 
         try:
             response = client.models.generate_content(
-                model="gemini-3.7-flash",
+                model="gemini-3.8-flash",
                 contents=prompt
             )
 
             return response.text
 
         except Exception:
-             # Gemini unavailable, use TF-IDF fallback
+            # Gemini unavailable, show retrieved chunks
 
-            sentences = re.split(
-                r'(?<=[.!?])\s+',
-                context
+            return (
+                "Gemini is currently unavailable.\n\n"
+                "Here are the most relevant parts of the document:\n\n"
+                + context
             )
-
-            sentences = [
-                sentence.strip()
-                for sentence in sentences
-                if len(sentence.strip()) > 20
-            ]
-
-            if not sentences:
-                return "I could not find a clear answer in the uploaded document."
-
-            vectorizer = TfidfVectorizer()
-
-            sentence_vectors = vectorizer.fit_transform(
-                sentences
-            )
-
-            question_vector = vectorizer.transform(
-                [question]
-            )
-
-            similarity_scores = cosine_similarity(
-                question_vector,
-                sentence_vectors
-            )[0]
-
-            top_indices = similarity_scores.argsort()[-3:][::-1]
-
-            answer_sentences = []
-
-            for index in top_indices:
-                if similarity_scores[index] > 0:
-                    answer_sentences.append(
-                        sentences[index]
-                    )
-
-            if not answer_sentences:
-                return "I could not find the answer in the uploaded document."
-
-            return " ".join(answer_sentences)
     
     if question.strip():
         scores, indices = retrieve_with_sbert(
